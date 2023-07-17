@@ -23,7 +23,7 @@ export default function Page({ story }: { story: any }) {
   );
 }
 
-export async function getStaticProps({ params }: { params: any }) {
+export async function getServerSideProps({ params }: { params: any }) {
   let slug = params.slug ? params.slug.join("/") : "home";
 
   const storyblokApi = getStoryblokApi();
@@ -35,34 +35,7 @@ export async function getStaticProps({ params }: { params: any }) {
     props: {
       story: data ? data.story : false,
       key: data ? data.story.id : false,
+      revalidate: 3600,
     },
-    revalidate: 3600,
-  };
-}
-
-export async function getStaticPaths() {
-  const storyblokApi = getStoryblokApi();
-
-  // read all links from Storyblok
-  let { data } = await storyblokApi.get("cdn/links/", {
-    version: "draft",
-  });
-
-  let paths: any = [];
-  Object.keys(data.links).forEach((linkKey) => {
-    if (data.links[linkKey].is_folder || data.links[linkKey].slug === "home") {
-      return;
-    }
-
-    const slug = data.links[linkKey].slug;
-    const path = data.links[linkKey].path;
-    let splittedSlug = slug.split("/");
-
-    paths.push({ params: { slug: splittedSlug } });
-  });
-
-  return {
-    paths: paths,
-    fallback: false,
   };
 }
